@@ -24,7 +24,6 @@ struct Offer {
 contract FarmContract is Ownable {
     HayChainStock hayChainStock;
     uint256 public budget;
-    uint256 public fee = 0.01 ether; // needed to be modified later
     mapping(bytes32 => Offer) public offers;
 
     constructor(address _stockAddress) {
@@ -39,10 +38,11 @@ contract FarmContract is Ownable {
     function payFeeAndMakeOffer(
         string memory productName,
         uint256 quantity
-    ) public payable {
-        uint256 stockAmount = hayChainStock.getStockAmount(productName);
+    ) public payable returns (Offer memory){
         (uint256 sellingPrice, ) = hayChainStock.getStockPrices(productName);
-        require(stockAmount >= quantity, "Insufficient stock");
+        uint256 fee = hayChainStock.fee();
+
+        require(msg.value == fee);
 
         pay(getOwner(), fee);
 
@@ -56,7 +56,10 @@ contract FarmContract is Ownable {
         offer.farmOwner = farmOwner;
         offer.quantity = quantity;
         offer.price = sellingPrice * quantity;
+        offer.productName = productName;
         offer.state = StateType.Created;
+
+        return offer;
     }
 
     function rejectStock(bytes32 offerId) public onlyAdmin {
@@ -66,7 +69,7 @@ contract FarmContract is Ownable {
         offer.state = StateType.Rejected;
     }
 
-    function approvedStockReceived(bytes32 offerId) public onlyAdmin {
+    function approvedStockReceived(bytes32 offerId) public payable onlyAdmin {
         Offer storage offer = offers[offerId];
         require(offer.state == StateType.Created, "Invalid state");
         require(checkBudgetAvailable(offerId), "Insufficient budget");

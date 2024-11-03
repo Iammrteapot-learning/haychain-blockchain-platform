@@ -15,6 +15,7 @@ struct Stock {
 contract HayChainStock is Ownable {
     mapping(bytes32 => Stock) public stocks;
     bytes32[] public productIds;
+    uint256 public fee = 1 wei;
 
     constructor() {}
 
