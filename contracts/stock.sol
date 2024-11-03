@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Non-License
 pragma solidity 0.8.28;
 pragma experimental ABIEncoderV2;
 
@@ -14,22 +15,8 @@ struct Stock {
 contract HayChainStock is Ownable {
     mapping(bytes32 => Stock) public stocks;
     bytes32[] public productIds;
-    address[] private admins;
 
     constructor() {}
-
-    modifier onlyAdmin() {
-        bool isAdmin = false;
-        for (uint256 i = 0; i < admins.length; i++) {
-            if (admins[i] == msg.sender) {
-                isAdmin = true;
-                break;
-            }
-        }
-
-        require(isAdmin, "Unauthorized");
-        _;
-    }
 
     function addStockQuantity(
         string memory _productName,
@@ -43,6 +30,7 @@ contract HayChainStock is Ownable {
         require(stock.buyingPrice != 0 && stock.sellingPrice != 0, "Product is not exist.");
 
         stock.quantity += _quantity;
+        updateStockPrice(_productName);
     }
 
     function removeStockQuantity(
@@ -58,6 +46,7 @@ contract HayChainStock is Ownable {
         require(stock.quantity >= _quantity, "Insufficient stock");
 
         stock.quantity -= _quantity;
+        updateStockPrice(_productName);
     }
 
     function getAllStocks() public view returns (Stock[] memory) {
@@ -101,7 +90,7 @@ contract HayChainStock is Ownable {
         uint256 _sellingPrice,
         uint256 _buyingPrice,
         uint256 _quantity
-    ) public onlyAdmin onlyOwner {
+    ) public onlyAdmin {
         require(_sellingPrice > 0, "Invalid selling price");
         require(_buyingPrice > 0, "Invalid buying price");
         require(_quantity > 0, "Invalid quantity");
@@ -120,9 +109,7 @@ contract HayChainStock is Ownable {
         productIds.push(_productId);
     }
 
-    function removeStockProduct(
-        string memory _productName
-    ) public onlyAdmin onlyOwner {
+    function removeStockProduct(string memory _productName) public onlyAdmin {
         bytes32 _productId = keccak256(abi.encodePacked(_productName));
         Stock storage stock = stocks[_productId];
 
@@ -138,13 +125,7 @@ contract HayChainStock is Ownable {
         }
     }
 
-    function updateStockPrice(string memory _productName)
-        private
-    {
+    function updateStockPrice(string memory _productName) private {
         // Update stock price with the economical logic
-    }
-
-    function addAdmin(address _admin) public onlyOwner {
-        admins.push(_admin);
     }
 }
