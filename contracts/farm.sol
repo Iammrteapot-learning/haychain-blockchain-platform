@@ -91,7 +91,7 @@ contract FarmContract is Ownable {
         Offer storage offer = offers[offerId];
         require(offer.state == StateType.Completed || offer.state == StateType.Rejected, "Invalid state");
 
-        offer.state = StateType.Done;
+        offer.state = StateType.Idle;
     }
 
     function addBudget(uint256 amount) public onlyOwner {

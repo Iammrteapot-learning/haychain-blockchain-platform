@@ -107,7 +107,7 @@ contract Customer is Ownable{
 
         require(order.orderState == StateType.Completed || order.orderState == StateType.Rejected, "Invalid orderState");
 
-        order.orderState = StateType.Done;
+        order.orderState = StateType.Idle;
     }
 
     function cancelOrder(
