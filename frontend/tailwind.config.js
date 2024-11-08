@@ -9,6 +9,8 @@ export default {
       darkblue: "#221F4C",
       red: "#B5363A",
       green: "#858B1D",
+      white: "#FFFFFF",
+      black: "#000000",
     },
     fontFamily: {
       lalezar: ["Lalezar", "sans-serif"],
