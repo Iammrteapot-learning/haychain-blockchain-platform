@@ -49,8 +49,8 @@ export function Marketplace({
       }}
     >
       <TableContainer sx={{ maxHeight: "450px", overflowY: "auto" }}>
-        <Table stickyHeader>
-          <TableHead stickyHeader>
+        <Table stickyheader="true">
+          <TableHead stickyheader="true">
             <TableRow>
               <StyledTableCell>PRODUCT</StyledTableCell>
               <StyledTableCell>BUYING</StyledTableCell>
