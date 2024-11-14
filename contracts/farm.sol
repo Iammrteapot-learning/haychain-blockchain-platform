@@ -25,6 +25,7 @@ contract FarmContract is Ownable {
     HayChainStock hayChainStock;
     uint256 public budget;
     mapping(bytes32 => Offer) public offers;
+    bytes32[] public offerKeys;
 
     constructor(address _stockAddress) {
         hayChainStock = HayChainStock(_stockAddress);
@@ -38,7 +39,7 @@ contract FarmContract is Ownable {
     function payFeeAndMakeOffer(
         string memory productName,
         uint256 quantity
-    ) public payable returns (Offer memory){
+    ) public payable returns (Offer memory) {
         (uint256 sellingPrice, ) = hayChainStock.getStockPrices(productName);
         uint256 fee = hayChainStock.fee();
 
@@ -52,6 +53,7 @@ contract FarmContract is Ownable {
         );
 
         Offer storage offer = offers[offerId];
+        offerKeys.push(offerId);
         offer.offerId = offerId;
         offer.farmOwner = farmOwner;
         offer.quantity = quantity;
@@ -89,7 +91,11 @@ contract FarmContract is Ownable {
 
     function clear(bytes32 offerId) public onlyAdmin {
         Offer storage offer = offers[offerId];
-        require(offer.state == StateType.Completed || offer.state == StateType.Rejected, "Invalid state");
+        require(
+            offer.state == StateType.Completed ||
+                offer.state == StateType.Rejected,
+            "Invalid state"
+        );
 
         offer.state = StateType.Idle;
     }
@@ -107,6 +113,16 @@ contract FarmContract is Ownable {
         if (!success) {
             revert("transfer error");
         }
+    }
+
+    function getAllOffers() public view returns (Offer[] memory) {
+        Offer[] memory allOffers = new Offer[](offerKeys.length);
+
+        for (uint256 i = 0; i < offerKeys.length; i++) {
+            allOffers[i] = offers[offerKeys[i]];
+        }
+
+        return allOffers;
     }
 
     receive() external payable {
