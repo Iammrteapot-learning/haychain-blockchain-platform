@@ -125,6 +125,27 @@ contract FarmContract is Ownable {
         return allOffers;
     }
 
+    function getOffersByFarmOwner(
+        address farmOwner
+    ) public view returns (Offer[] memory) {
+        Offer[] memory tempOffers = new Offer[](offerKeys.length);
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < offerKeys.length; i++) {
+            if (offers[offerKeys[i]].farmOwner == farmOwner) {
+                tempOffers[count] = offers[offerKeys[i]];
+                count++;
+            }
+        }
+
+        Offer[] memory farmOwnerOffers = new Offer[](count);
+        for (uint256 i = 0; i < count; i++) {
+            farmOwnerOffers[i] = tempOffers[i];
+        }
+
+        return farmOwnerOffers;
+    }
+
     receive() external payable {
         revert("Not support sending Ethers to this contract directly.");
     }

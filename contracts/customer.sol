@@ -135,6 +135,27 @@ contract Customer is Ownable {
         return allOrders;
     }
 
+    function getOrdersByCustomerId(
+        address _customer
+    ) public view returns (Order[] memory) {
+        Order[] memory tempOrders = new Order[](orderKeys.length);
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < orderKeys.length; i++) {
+            if (orders[orderKeys[i]].customer == _customer) {
+                tempOrders[count] = orders[orderKeys[i]];
+                count++;
+            }
+        }
+
+        Order[] memory customerOrders = new Order[](count);
+        for (uint256 i = 0; i < count; i++) {
+            customerOrders[i] = tempOrders[i];
+        }
+
+        return customerOrders;
+    }
+
     receive() external payable {
         revert("Not support sending Ethers to this contract directly.");
     }
