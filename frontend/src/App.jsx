@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
 //components
@@ -8,6 +8,8 @@ import Line from "./assets/line.svg";
 import { Marketplace } from "./components/Marketplace";
 import { BuySellModal } from "./components/BuySellModal";
 import { Transaction } from "./constant/transaction";
+import OfferList from "./components/OfferList";
+import OrderList from "./components/OrderList";
 
 const defaultProduct = {
   productName: "",
@@ -17,43 +19,1166 @@ const defaultProduct = {
 };
 
 function App() {
-  const [connected, setConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState("");
+  const STOCK_CONTRACT_ADDRESS = "0x3EB33A09E65A2a304B8e83fFEa7C754300201eF4";
+  const STOCK_ABI = [
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_admin",
+          type: "address",
+        },
+      ],
+      name: "addAdmin",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "_productName",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_sellingPrice",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_buyingPrice",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_quantity",
+          type: "uint256",
+        },
+      ],
+      name: "addStockProduct",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "_productName",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_quantity",
+          type: "uint256",
+        },
+      ],
+      name: "addStockQuantity",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_admin",
+          type: "address",
+        },
+      ],
+      name: "removeAdmin",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "_productName",
+          type: "string",
+        },
+      ],
+      name: "removeStockProduct",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "_productName",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "_quantity",
+          type: "uint256",
+        },
+      ],
+      name: "removeStockQuantity",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_newOwner",
+          type: "address",
+        },
+      ],
+      name: "transferOwnership",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      stateMutability: "nonpayable",
+      type: "constructor",
+    },
+    {
+      inputs: [],
+      name: "fee",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getAdmins",
+      outputs: [
+        {
+          internalType: "address[]",
+          name: "",
+          type: "address[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getAllStocks",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "bytes32",
+              name: "productId",
+              type: "bytes32",
+            },
+            {
+              internalType: "string",
+              name: "productName",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "sellingPrice",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "buyingPrice",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "quantity",
+              type: "uint256",
+            },
+          ],
+          internalType: "struct Stock[]",
+          name: "",
+          type: "tuple[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getOwner",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "_productName",
+          type: "string",
+        },
+      ],
+      name: "getStockAmount",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "_productName",
+          type: "string",
+        },
+      ],
+      name: "getStockPrices",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "productIds",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      name: "stocks",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "productId",
+          type: "bytes32",
+        },
+        {
+          internalType: "string",
+          name: "productName",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "sellingPrice",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "buyingPrice",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "quantity",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+  ];
+
+  const CUSTOMER_CONTRACT_ADDRESS =
+    "0x734E1e460028cFFe241E068AE67B593D0a53D513";
+  const CUSTOMER_ABI = [
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "orderId",
+          type: "bytes32",
+        },
+      ],
+      name: "acceptOrder",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_admin",
+          type: "address",
+        },
+      ],
+      name: "addAdmin",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "orderId",
+          type: "bytes32",
+        },
+      ],
+      name: "cancelOrder",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "orderId",
+          type: "bytes32",
+        },
+      ],
+      name: "clear",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "orderId",
+          type: "bytes32",
+        },
+      ],
+      name: "deliver",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_quantity",
+          type: "uint256",
+        },
+        {
+          internalType: "string",
+          name: "_productName",
+          type: "string",
+        },
+      ],
+      name: "makeOrder",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "bytes32",
+              name: "orderId",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "customer",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "productName",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "price",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "quantity",
+              type: "uint256",
+            },
+            {
+              internalType: "enum StateType",
+              name: "orderState",
+              type: "uint8",
+            },
+          ],
+          internalType: "struct Order",
+          name: "",
+          type: "tuple",
+        },
+      ],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "orderId",
+          type: "bytes32",
+        },
+      ],
+      name: "received",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_admin",
+          type: "address",
+        },
+      ],
+      name: "removeAdmin",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_newOwner",
+          type: "address",
+        },
+      ],
+      name: "transferOwnership",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_stockAddress",
+          type: "address",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "constructor",
+    },
+    {
+      stateMutability: "payable",
+      type: "fallback",
+    },
+    {
+      stateMutability: "payable",
+      type: "receive",
+    },
+    {
+      inputs: [],
+      name: "getAdmins",
+      outputs: [
+        {
+          internalType: "address[]",
+          name: "",
+          type: "address[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getAllOrders",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "bytes32",
+              name: "orderId",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "customer",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "productName",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "price",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "quantity",
+              type: "uint256",
+            },
+            {
+              internalType: "enum StateType",
+              name: "orderState",
+              type: "uint8",
+            },
+          ],
+          internalType: "struct Order[]",
+          name: "",
+          type: "tuple[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_customer",
+          type: "address",
+        },
+      ],
+      name: "getOrdersByCustomerId",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "bytes32",
+              name: "orderId",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "customer",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "productName",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "price",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "quantity",
+              type: "uint256",
+            },
+            {
+              internalType: "enum StateType",
+              name: "orderState",
+              type: "uint8",
+            },
+          ],
+          internalType: "struct Order[]",
+          name: "",
+          type: "tuple[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getOwner",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "orderKeys",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      name: "orders",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "orderId",
+          type: "bytes32",
+        },
+        {
+          internalType: "address",
+          name: "customer",
+          type: "address",
+        },
+        {
+          internalType: "string",
+          name: "productName",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "price",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "quantity",
+          type: "uint256",
+        },
+        {
+          internalType: "enum StateType",
+          name: "orderState",
+          type: "uint8",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+  ];
+
+  const FARMER_CONTRACT_ADDRESS = "0xff9Cc794F5cca7eA2A65983dd5705755f17ADA11";
+  const FARMER_ABI = [
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_admin",
+          type: "address",
+        },
+      ],
+      name: "addAdmin",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "addBudget",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "offerId",
+          type: "bytes32",
+        },
+      ],
+      name: "approvedStockReceived",
+      outputs: [],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "offerId",
+          type: "bytes32",
+        },
+      ],
+      name: "clear",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "string",
+          name: "productName",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "quantity",
+          type: "uint256",
+        },
+      ],
+      name: "payFeeAndMakeOffer",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "bytes32",
+              name: "offerId",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "farmOwner",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "productName",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "quantity",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "price",
+              type: "uint256",
+            },
+            {
+              internalType: "enum StateType",
+              name: "state",
+              type: "uint8",
+            },
+          ],
+          internalType: "struct Offer",
+          name: "",
+          type: "tuple",
+        },
+      ],
+      stateMutability: "payable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "offerId",
+          type: "bytes32",
+        },
+      ],
+      name: "receiveMoney",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "offerId",
+          type: "bytes32",
+        },
+      ],
+      name: "rejectStock",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_admin",
+          type: "address",
+        },
+      ],
+      name: "removeAdmin",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_newOwner",
+          type: "address",
+        },
+      ],
+      name: "transferOwnership",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_stockAddress",
+          type: "address",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "constructor",
+    },
+    {
+      stateMutability: "payable",
+      type: "fallback",
+    },
+    {
+      stateMutability: "payable",
+      type: "receive",
+    },
+    {
+      inputs: [],
+      name: "budget",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getAdmins",
+      outputs: [
+        {
+          internalType: "address[]",
+          name: "",
+          type: "address[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getAllOffers",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "bytes32",
+              name: "offerId",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "farmOwner",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "productName",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "quantity",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "price",
+              type: "uint256",
+            },
+            {
+              internalType: "enum StateType",
+              name: "state",
+              type: "uint8",
+            },
+          ],
+          internalType: "struct Offer[]",
+          name: "",
+          type: "tuple[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "farmOwner",
+          type: "address",
+        },
+      ],
+      name: "getOffersByFarmOwner",
+      outputs: [
+        {
+          components: [
+            {
+              internalType: "bytes32",
+              name: "offerId",
+              type: "bytes32",
+            },
+            {
+              internalType: "address",
+              name: "farmOwner",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "productName",
+              type: "string",
+            },
+            {
+              internalType: "uint256",
+              name: "quantity",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "price",
+              type: "uint256",
+            },
+            {
+              internalType: "enum StateType",
+              name: "state",
+              type: "uint8",
+            },
+          ],
+          internalType: "struct Offer[]",
+          name: "",
+          type: "tuple[]",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getOwner",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      name: "offerKeys",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "",
+          type: "bytes32",
+        },
+      ],
+      name: "offers",
+      outputs: [
+        {
+          internalType: "bytes32",
+          name: "offerId",
+          type: "bytes32",
+        },
+        {
+          internalType: "address",
+          name: "farmOwner",
+          type: "address",
+        },
+        {
+          internalType: "string",
+          name: "productName",
+          type: "string",
+        },
+        {
+          internalType: "uint256",
+          name: "quantity",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "price",
+          type: "uint256",
+        },
+        {
+          internalType: "enum StateType",
+          name: "state",
+          type: "uint8",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+  ];
+
+  const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
+  const [account, setAccount] = useState("");
+  const [stockContract, setStockContract] = useState(null);
+  const [customerContract, setCustomerContract] = useState(null);
+  const [farmerContract, setFarmerContract] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(defaultProduct);
   const [isSelectedProduct, setIsSelectedProduct] = useState(false);
 
-  // Mock Product list
   const productList = [
-    { product: "Carrot", buying: 20, selling: 18 },
-    { product: "Tomato", buying: 24, selling: 20 },
-    { product: "Potato", buying: 32, selling: 29 },
-    { product: "Onion", buying: 15, selling: 13 },
-    { product: "Cucumber", buying: 22, selling: 19 },
-    { product: "Lettuce", buying: 12, selling: 10 },
-    { product: "Spinach", buying: 18, selling: 16 },
-    { product: "Broccoli", buying: 28, selling: 25 },
-    { product: "Garlic", buying: 35, selling: 30 },
-    { product: "Pepper", buying: 27, selling: 22 },
+    { product: "Hay", buying: 20, selling: 18, amount: 100 },
+    { product: "Carrot", buying: 24, selling: 20, amount: 50 },
   ];
 
-  async function connectWallet() {
-    if (!connected) {
-      try {
-        // Connect the wallet
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const _walletAddress = await signer.getAddress();
-        setConnected(true);
-        setWalletAddress(_walletAddress);
-      } catch (error) {
-        console.error("Failed to connect wallet:", error);
+  const offerList = [
+    {
+      offerId: "0x1",
+      productName: "Hay",
+      quantity: 10,
+      price: 20,
+      state: "Created",
+    },
+    {
+      offerId: "0x2",
+      productName: "Carrot",
+      quantity: 10,
+      price: 30,
+      state: "Received",
+    },
+  ];
+
+  const orderList = [
+    {
+      orderId: "0x1",
+      productName: "Hay",
+      quantity: 10,
+      price: 20,
+      orderState: "Created",
+    },
+    {
+      orderId: "0x2",
+      productName: "Carrot",
+      quantity: 10,
+      price: 30,
+      orderState: "InTransit",
+    },
+    {
+      orderId: "0x3",
+      productName: "Hay",
+      quantity: 10,
+      price: 20,
+      orderState: "Accepted",
+    },
+  ];
+
+  useEffect(() => {
+    const initContract = (initSigner) => {
+      const stockContract = new ethers.Contract(
+        STOCK_CONTRACT_ADDRESS,
+        STOCK_ABI,
+        initSigner
+      );
+      setStockContract(stockContract);
+
+      const customerContract = new ethers.Contract(
+        CUSTOMER_CONTRACT_ADDRESS,
+        CUSTOMER_ABI,
+        initSigner
+      );
+      setCustomerContract(customerContract);
+
+      const farmerContract = new ethers.Contract(
+        FARMER_CONTRACT_ADDRESS,
+        FARMER_ABI,
+        initSigner
+      );
+      setFarmerContract(farmerContract);
+    };
+
+    const init = async () => {
+      if (typeof window.ethereum !== "undefined") {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        setProvider(provider);
+
+        // Listen for account changes in MetaMask
+        window.ethereum.on("accountsChanged", async (accounts) => {
+          setAccount(accounts[0]);
+          const signer = provider.getSigner();
+          setSigner(signer);
+          initContract(signer);
+        });
+
+        const accounts = await provider.send("eth_requestAccounts", []);
+        setAccount(accounts[0]);
+
+        const signer = provider.getSigner();
+        setSigner(signer);
+        initContract(signer);
       }
-    } else {
-      // Disconnect the wallet
-      setConnected(false);
-      setWalletAddress("");
-    }
-  }
+    };
+    init();
+    console.log("stockContract", stockContract);
+    console.log("customerContract", customerContract);
+    console.log("farmerContract", farmerContract);
+  }, []);
 
   function handleQuantityChange(quantity) {
     setSelectedProduct((prev) => {
@@ -83,11 +1208,11 @@ function App() {
 
   return (
     <>
-      <div className="bg-cream h-screen w-screen">
+      <div className="bg-cream h-full w-screen">
         <Navbar
-          connected={connected}
-          walletAddress={walletAddress}
-          connectWallet={connectWallet}
+          connected={true}
+          walletAddress={account}
+          connectWallet={() => {}}
         />
         <div className="w-full flex flex-col items-center justify-center -translate-y-16">
           <img
@@ -104,6 +1229,8 @@ function App() {
             setSelectedProduct={setSelectedProduct}
             setIsSelectedProduct={setIsSelectedProduct}
           />
+          <OfferList offerList={offerList} />
+          <OrderList orderList={orderList} />
         </div>
       </div>
       {isSelectedProduct && (

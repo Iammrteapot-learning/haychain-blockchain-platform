@@ -22,12 +22,12 @@ struct Order {
     StateType orderState;
 }
 
-contract Customer is Ownable{
+contract Customer is Ownable {
     HayChainStock hayChainStock;
     mapping(bytes32 => Order) public orders;
-    
+    bytes32[] public orderKeys;
 
-    constructor (address _stockAddress) {
+    constructor(address _stockAddress) {
         hayChainStock = HayChainStock(_stockAddress);
     }
 
@@ -36,24 +36,26 @@ contract Customer is Ownable{
         _;
     }
 
-    function makeOrder( 
+    function makeOrder(
         uint256 _quantity,
         string memory _productName
-    ) public payable returns(Order memory){
+    ) public payable returns (Order memory) {
         uint256 stockAmount = hayChainStock.getStockAmount(_productName);
         uint256 fee = hayChainStock.fee();
-        
-        ( ,uint256 buyingPrice) = hayChainStock.getStockPrices(_productName);
+
+        (, uint256 buyingPrice) = hayChainStock.getStockPrices(_productName);
         require(stockAmount >= _quantity, "Insufficient stock");
         require(msg.value == fee);
 
         pay(getOwner(), fee);
-       
+
         address customer = msg.sender;
         bytes32 orderId = keccak256(
-         abi.encodePacked(customer, block.timestamp)
+            abi.encodePacked(customer, block.timestamp)
         );
         Order storage order = orders[orderId];
+        orderKeys.push(orderId);
+
         uint256 orderPrice = _quantity * buyingPrice;
 
         order.orderId = orderId;
@@ -66,9 +68,7 @@ contract Customer is Ownable{
         return order;
     }
 
-    function acceptOrder(
-        bytes32 orderId
-    ) public onlyAdmin {
+    function acceptOrder(bytes32 orderId) public onlyAdmin {
         Order storage order = orders[orderId];
 
         require(order.orderState == StateType.Created, "Invalid orderState");
@@ -78,18 +78,14 @@ contract Customer is Ownable{
         order.orderState = StateType.Accepted;
     }
 
-    function deliver(
-        bytes32 orderId
-    ) public onlyAdmin {
+    function deliver(bytes32 orderId) public onlyAdmin {
         Order storage order = orders[orderId];
 
         require(order.orderState == StateType.Accepted, "Invalid orderState");
         order.orderState = StateType.InTransit;
     }
 
-    function received(
-        bytes32 orderId
-    ) public payable onlyCustomer(orderId){
+    function received(bytes32 orderId) public payable onlyCustomer(orderId) {
         Order storage order = orders[orderId];
 
         require(order.orderState == StateType.InTransit, "Invalid orderState");
@@ -100,19 +96,21 @@ contract Customer is Ownable{
         order.orderState = StateType.Completed;
     }
 
-    function clear(
-        bytes32 orderId
-    ) public payable onlyAdmin{
+    function clear(bytes32 orderId) public payable onlyAdmin {
         Order storage order = orders[orderId];
 
-        require(order.orderState == StateType.Completed || order.orderState == StateType.Rejected, "Invalid orderState");
+        require(
+            order.orderState == StateType.Completed ||
+                order.orderState == StateType.Rejected,
+            "Invalid orderState"
+        );
 
         order.orderState = StateType.Idle;
     }
 
     function cancelOrder(
         bytes32 orderId
-    ) public onlyCustomer(orderId) onlyAdmin{
+    ) public onlyCustomer(orderId) onlyAdmin {
         Order storage order = orders[orderId];
 
         require(order.orderState == StateType.Created, "Invalid orderState");
@@ -125,6 +123,37 @@ contract Customer is Ownable{
         if (!success) {
             revert("transfer error");
         }
+    }
+
+    function getAllOrders() public view returns (Order[] memory) {
+        Order[] memory allOrders = new Order[](orderKeys.length);
+
+        for (uint256 i = 0; i < orderKeys.length; i++) {
+            allOrders[i] = orders[orderKeys[i]];
+        }
+
+        return allOrders;
+    }
+
+    function getOrdersByCustomerId(
+        address _customer
+    ) public view returns (Order[] memory) {
+        Order[] memory tempOrders = new Order[](orderKeys.length);
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < orderKeys.length; i++) {
+            if (orders[orderKeys[i]].customer == _customer) {
+                tempOrders[count] = orders[orderKeys[i]];
+                count++;
+            }
+        }
+
+        Order[] memory customerOrders = new Order[](count);
+        for (uint256 i = 0; i < count; i++) {
+            customerOrders[i] = tempOrders[i];
+        }
+
+        return customerOrders;
     }
 
     receive() external payable {
