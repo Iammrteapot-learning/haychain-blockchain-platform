@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
 //components
@@ -17,8 +17,13 @@ const defaultProduct = {
 };
 
 function App() {
-  const [connected, setConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState("");
+  const CONTRACT_ADDRESS = "";
+  const ABI = [];
+
+  const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [account, setAccount] = useState("");
   const [selectedProduct, setSelectedProduct] = useState(defaultProduct);
   const [isSelectedProduct, setIsSelectedProduct] = useState(false);
 
@@ -36,24 +41,33 @@ function App() {
     { product: "Pepper", buying: 27, selling: 22 },
   ];
 
-  async function connectWallet() {
-    if (!connected) {
-      try {
-        // Connect the wallet
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
-        const _walletAddress = await signer.getAddress();
-        setConnected(true);
-        setWalletAddress(_walletAddress);
-      } catch (error) {
-        console.error("Failed to connect wallet:", error);
+  useEffect(() => {
+    const init = async () => {
+      if (typeof window.ethereum !== "undefined") {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        setProvider(provider);
+
+        // Listen for account changes in MetaMask
+        window.ethereum.on("accountsChanged", async (accounts) => {
+          setAccount(accounts[0]);
+          const signer = provider.getSigner();
+          setSigner(signer);
+          // const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+          // setContract(contract);
+        });
+
+        const accounts = await provider.send("eth_requestAccounts", []);
+        setAccount(accounts[0]);
+
+        const signer = provider.getSigner();
+        setSigner(signer);
+
+        // const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+        // setContract(contract);
       }
-    } else {
-      // Disconnect the wallet
-      setConnected(false);
-      setWalletAddress("");
-    }
-  }
+    };
+    init();
+  }, []);
 
   function handleQuantityChange(quantity) {
     setSelectedProduct((prev) => {
@@ -85,9 +99,9 @@ function App() {
     <>
       <div className="bg-cream h-screen w-screen">
         <Navbar
-          connected={connected}
-          walletAddress={walletAddress}
-          connectWallet={connectWallet}
+          connected={true}
+          walletAddress={account}
+          connectWallet={() => {}}
         />
         <div className="w-full flex flex-col items-center justify-center -translate-y-16">
           <img
