@@ -17,7 +17,7 @@ const StyledTableCell = styled(TableCell)(() => ({
     fontWeight: 900,
     padding: "24px 0 24px 40px",
   },
-  [`&:nth-of-type(2), &:nth-of-type(3)`]: {
+  [`&:nth-of-type(2), &:nth-of-type(3), &:nth-of-type(4)`]: {
     textAlign: "center",
     color: "#637381",
   },
@@ -55,6 +55,7 @@ export function Marketplace({
               <StyledTableCell>PRODUCT</StyledTableCell>
               <StyledTableCell>BUYING</StyledTableCell>
               <StyledTableCell>SELLING</StyledTableCell>
+              <StyledTableCell>AMOUNT</StyledTableCell>
               <StyledTableCell />
               <StyledTableCell />
             </TableRow>
@@ -65,6 +66,7 @@ export function Marketplace({
                 <StyledTableCell>{row.product}</StyledTableCell>
                 <StyledTableCell>{row.buying} /kg</StyledTableCell>
                 <StyledTableCell>{row.selling} /kg</StyledTableCell>
+                <StyledTableCell>{row.amount}</StyledTableCell>
                 <StyledTableCell align="center">
                   <BuySellButton
                     type={Transaction.Sell}

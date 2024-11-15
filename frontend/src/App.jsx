@@ -29,16 +29,8 @@ function App() {
 
   // Mock Product list
   const productList = [
-    { product: "Carrot", buying: 20, selling: 18 },
-    { product: "Tomato", buying: 24, selling: 20 },
-    { product: "Potato", buying: 32, selling: 29 },
-    { product: "Onion", buying: 15, selling: 13 },
-    { product: "Cucumber", buying: 22, selling: 19 },
-    { product: "Lettuce", buying: 12, selling: 10 },
-    { product: "Spinach", buying: 18, selling: 16 },
-    { product: "Broccoli", buying: 28, selling: 25 },
-    { product: "Garlic", buying: 35, selling: 30 },
-    { product: "Pepper", buying: 27, selling: 22 },
+    { product: "Hay", buying: 20, selling: 18, amount: 100 },
+    { product: "Carrot", buying: 24, selling: 20, amount: 50 },
   ];
 
   useEffect(() => {
