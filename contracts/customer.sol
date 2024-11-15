@@ -32,7 +32,15 @@ contract Customer is Ownable {
     }
 
     modifier onlyCustomer(bytes32 orderId) {
-        require(msg.sender == orders[orderId].customer, "unauthorized");
+        require(msg.sender == orders[orderId].customer, "Unauthorized");
+        _;
+    }
+
+    modifier onlyCustomerOrAdmin(bytes32 orderId) {
+        require(
+            msg.sender == orders[orderId].customer || msg.sender == getOwner(),
+            "Unauthorized"
+        );
         _;
     }
 
@@ -94,7 +102,7 @@ contract Customer is Ownable {
         order.orderState = StateType.Completed;
     }
 
-    function clear(bytes32 orderId) public payable onlyAdmin {
+    function clear(bytes32 orderId) public onlyAdmin {
         Order storage order = orders[orderId];
 
         require(
@@ -108,7 +116,7 @@ contract Customer is Ownable {
 
     function cancelOrder(
         bytes32 orderId
-    ) public onlyCustomer(orderId) onlyAdmin {
+    ) public onlyCustomerOrAdmin(orderId) {
         Order storage order = orders[orderId];
 
         require(order.orderState == StateType.Created, "Invalid orderState");
