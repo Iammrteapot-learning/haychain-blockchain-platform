@@ -8,6 +8,8 @@ import Line from "./assets/line.svg";
 import { Marketplace } from "./components/Marketplace";
 import { BuySellModal } from "./components/BuySellModal";
 import { Transaction } from "./constant/transaction";
+import OfferList from "./components/OfferList";
+import OrderList from "./components/OrderList";
 
 const defaultProduct = {
   productName: "",
@@ -31,6 +33,40 @@ function App() {
   const productList = [
     { product: "Hay", buying: 20, selling: 18, amount: 100 },
     { product: "Carrot", buying: 24, selling: 20, amount: 50 },
+  ];
+
+  const offerList = [
+    {
+      offerId: "0x1",
+      productName: "Hay",
+      quantity: 10,
+      price: 20,
+      state: "Created",
+    },
+    {
+      offerId: "0x2",
+      productName: "Carrot",
+      quantity: 10,
+      price: 30,
+      state: "Created",
+    },
+  ];
+
+  const orderList = [
+    {
+      orderId: "0x1",
+      productName: "Hay",
+      quantity: 10,
+      price: 20,
+      orderState: "Created",
+    },
+    {
+      orderId: "0x2",
+      productName: "Carrot",
+      quantity: 10,
+      price: 30,
+      orderState: "Created",
+    },
   ];
 
   useEffect(() => {
@@ -89,7 +125,7 @@ function App() {
 
   return (
     <>
-      <div className="bg-cream h-screen w-screen">
+      <div className="bg-cream h-full w-screen">
         <Navbar
           connected={true}
           walletAddress={account}
@@ -110,6 +146,8 @@ function App() {
             setSelectedProduct={setSelectedProduct}
             setIsSelectedProduct={setIsSelectedProduct}
           />
+          <OfferList offerList={offerList} />
+          <OrderList orderList={orderList} />
         </div>
       </div>
       {isSelectedProduct && (
