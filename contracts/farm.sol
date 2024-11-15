@@ -71,13 +71,11 @@ contract FarmContract is Ownable {
         offer.state = StateType.Rejected;
     }
 
-    function approvedStockReceived(bytes32 offerId) public payable onlyAdmin {
+    function approvedStockReceived(bytes32 offerId) public onlyAdmin {
         Offer storage offer = offers[offerId];
         require(offer.state == StateType.Created, "Invalid state");
-        require(checkBudgetAvailable(offerId), "Insufficient budget");
 
         hayChainStock.addStockQuantity(offer.productName, offer.quantity);
-        pay(offer.farmOwner, offer.price);
 
         offer.state = StateType.Received;
     }
@@ -85,6 +83,10 @@ contract FarmContract is Ownable {
     function receiveMoney(bytes32 offerId) public onlyFarmOwner(offerId) {
         Offer storage offer = offers[offerId];
         require(offer.state == StateType.Received, "Invalid state");
+        require(checkBudgetAvailable(offerId), "Insufficient budget");
+
+        pay(offer.farmOwner, offer.price);
+        budget -= offer.price;
 
         offer.state = StateType.Completed;
     }
@@ -97,11 +99,12 @@ contract FarmContract is Ownable {
             "Invalid state"
         );
 
-        offer.state = StateType.Idle;
+        offer.state = StateType.Done;
     }
 
-    function addBudget(uint256 amount) public onlyOwner {
-        budget += amount;
+    function addBudget() public payable onlyOwner {
+        require(msg.value > 0, "Invalid amount");
+        budget += msg.value;
     }
 
     function checkBudgetAvailable(bytes32 offetId) private view returns (bool) {
@@ -144,13 +147,5 @@ contract FarmContract is Ownable {
         }
 
         return farmOwnerOffers;
-    }
-
-    receive() external payable {
-        revert("Not support sending Ethers to this contract directly.");
-    }
-
-    fallback() external payable {
-        revert("Invalid function call");
     }
 }
