@@ -159,25 +159,14 @@ contract HayChainStock is Ownable {
         Stock storage stock = stocks[_productId];
         uint256 oldSellingPrice = stock.sellingPrice;
         uint256 oldBuyingPrice = stock.buyingPrice;
+        uint256 priceAdjustment = 1 * (_newQuantity - _oldQuantity);
 
-        if (_oldQuantity < _newQuantity) {
-            stock.sellingPrice =
-                oldSellingPrice +
-                1 *
-                (_newQuantity - _oldQuantity);
-            stock.buyingPrice =
-                oldBuyingPrice +
-                1 *
-                (_newQuantity - _oldQuantity);
+        if (_oldQuantity > _newQuantity) {
+            stock.sellingPrice = oldSellingPrice + priceAdjustment;
+            stock.buyingPrice = oldBuyingPrice + priceAdjustment;
         } else {
-            stock.sellingPrice =
-                oldSellingPrice -
-                1 *
-                (_oldQuantity - _newQuantity);
-            stock.buyingPrice =
-                oldBuyingPrice -
-                1 *
-                (_oldQuantity - _newQuantity);
+            stock.sellingPrice = stock.sellingPrice > priceAdjustment ? stock.sellingPrice - priceAdjustment : 1;
+            stock.buyingPrice = stock.buyingPrice > priceAdjustment ? stock.buyingPrice - priceAdjustment : 1;
         }
     }
 }
