@@ -44,10 +44,11 @@ contract Customer is Ownable {
         uint256 fee = hayChainStock.fee();
 
         (, uint256 buyingPrice) = hayChainStock.getStockPrices(_productName);
-        require(stockAmount >= _quantity, "Insufficient stock");
-        require(msg.value == fee);
+        uint256 orderPrice = _quantity * buyingPrice;
+        uint256 totalPayment = fee + orderPrice;
 
-        pay(getOwner(), fee);
+        require(stockAmount >= _quantity, "Insufficient stock");
+        require(msg.value == totalPayment, "Invalid payment");
 
         address customer = msg.sender;
         bytes32 orderId = keccak256(
@@ -55,8 +56,6 @@ contract Customer is Ownable {
         );
         Order storage order = orders[orderId];
         orderKeys.push(orderId);
-
-        uint256 orderPrice = _quantity * buyingPrice;
 
         order.orderId = orderId;
         order.customer = customer;
@@ -85,11 +84,10 @@ contract Customer is Ownable {
         order.orderState = StateType.InTransit;
     }
 
-    function received(bytes32 orderId) public payable onlyCustomer(orderId) {
+    function customerReceiveOrder(bytes32 orderId) public onlyCustomer(orderId) {
         Order storage order = orders[orderId];
 
         require(order.orderState == StateType.InTransit, "Invalid orderState");
-        require(msg.value == order.price);
 
         pay(getOwner(), order.price);
 
@@ -105,7 +103,7 @@ contract Customer is Ownable {
             "Invalid orderState"
         );
 
-        order.orderState = StateType.Idle;
+        order.orderState = StateType.Done;
     }
 
     function cancelOrder(
@@ -114,6 +112,8 @@ contract Customer is Ownable {
         Order storage order = orders[orderId];
 
         require(order.orderState == StateType.Created, "Invalid orderState");
+
+        pay(order.customer, order.price);
 
         order.orderState = StateType.Rejected;
     }
@@ -154,13 +154,5 @@ contract Customer is Ownable {
         }
 
         return customerOrders;
-    }
-
-    receive() external payable {
-        revert("Not support sending Ethers to this contract directly.");
-    }
-
-    fallback() external payable {
-        revert("Invalid function call");
     }
 }
