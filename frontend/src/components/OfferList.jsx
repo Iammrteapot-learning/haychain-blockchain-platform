@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
+import { BaseButton } from "./BaseButton";
 
 const StyledTableCell = styled(TableCell)(() => ({
   [`&:nth-of-type(1)`]: {
@@ -33,6 +34,14 @@ const StyledTableCell = styled(TableCell)(() => ({
 }));
 
 export default function OfferList({ offerList }) {
+  const handleReceiveMoney = (state, offerId) => () => {
+    if (state !== "Received") {
+      alert("Transaction state has to be Received first!");
+      return;
+    }
+    alert(`Money received successfully! Offer ID: ${offerId}`);
+  };
+
   return (
     <Paper
       sx={{
@@ -51,7 +60,7 @@ export default function OfferList({ offerList }) {
               <StyledTableCell>QUANTITY</StyledTableCell>
               <StyledTableCell>PRICE</StyledTableCell>
               <StyledTableCell>STATE</StyledTableCell>
-              <StyledTableCell />
+              {/* <StyledTableCell /> */}
               <StyledTableCell />
             </TableRow>
           </TableHead>
@@ -63,8 +72,14 @@ export default function OfferList({ offerList }) {
                 <StyledTableCell>{row.quantity}</StyledTableCell>
                 <StyledTableCell>{row.price} /kg</StyledTableCell>
                 <StyledTableCell>{row.state}</StyledTableCell>
-                <StyledTableCell align="center"></StyledTableCell>
-                <StyledTableCell align="center"></StyledTableCell>
+                {/* <StyledTableCell align="center" width={192}></StyledTableCell> */}
+                <StyledTableCell align="center" width={360}>
+                  <BaseButton
+                    text="Receive Money"
+                    color="green"
+                    handleClick={handleReceiveMoney(row.state, row.offerId)}
+                  />
+                </StyledTableCell>
               </TableRow>
             ))}
           </TableBody>

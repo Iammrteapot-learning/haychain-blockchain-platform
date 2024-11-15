@@ -29,7 +29,6 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState(defaultProduct);
   const [isSelectedProduct, setIsSelectedProduct] = useState(false);
 
-  // Mock Product list
   const productList = [
     { product: "Hay", buying: 20, selling: 18, amount: 100 },
     { product: "Carrot", buying: 24, selling: 20, amount: 50 },
@@ -48,7 +47,7 @@ function App() {
       productName: "Carrot",
       quantity: 10,
       price: 30,
-      state: "Created",
+      state: "Received",
     },
   ];
 
@@ -65,7 +64,14 @@ function App() {
       productName: "Carrot",
       quantity: 10,
       price: 30,
-      orderState: "Created",
+      orderState: "InTransit",
+    },
+    {
+      orderId: "0x3",
+      productName: "Hay",
+      quantity: 10,
+      price: 20,
+      orderState: "Accepted",
     },
   ];
 

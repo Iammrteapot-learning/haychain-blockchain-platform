@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
+import { BaseButton } from "./BaseButton";
 
 const StyledTableCell = styled(TableCell)(() => ({
   [`&:nth-of-type(1)`]: {
@@ -33,6 +34,24 @@ const StyledTableCell = styled(TableCell)(() => ({
 }));
 
 export default function OrderList({ orderList }) {
+  const handleCancelOrder = (state, orderId) => () => {
+    if (state !== "Created") {
+      alert("You can't cancel order if state is not Created!");
+      return;
+    }
+    alert(`Order is cancelling! Order ID: ${orderId}`);
+  };
+
+  const handleReceiveOrder = (state, orderId) => () => {
+    if (state !== "InTransit") {
+      alert("Order state has to be InTransit first!");
+      return;
+    }
+    alert(
+      `You have confirmed the delivery of this order! Order ID: ${orderId}`
+    );
+  };
+
   return (
     <Paper
       sx={{
@@ -63,8 +82,23 @@ export default function OrderList({ orderList }) {
                 <StyledTableCell>{row.quantity}</StyledTableCell>
                 <StyledTableCell>{row.price} /kg</StyledTableCell>
                 <StyledTableCell>{row.orderState}</StyledTableCell>
-                <StyledTableCell align="center"></StyledTableCell>
-                <StyledTableCell align="center"></StyledTableCell>
+                <StyledTableCell align="center">
+                  <BaseButton
+                    text="Cancel"
+                    color="red"
+                    handleClick={handleCancelOrder(row.orderState, row.orderId)}
+                  />
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <BaseButton
+                    text="Order Received"
+                    color="green"
+                    handleClick={handleReceiveOrder(
+                      row.orderState,
+                      row.orderId
+                    )}
+                  />
+                </StyledTableCell>
               </TableRow>
             ))}
           </TableBody>
