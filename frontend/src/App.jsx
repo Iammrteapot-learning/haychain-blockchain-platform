@@ -19,13 +19,21 @@ const defaultProduct = {
 };
 
 function App() {
-  const CONTRACT_ADDRESS = "";
-  const ABI = [];
+  const STOCK_CONTRACT_ADDRESS = "";
+  const STOCK_ABI = [];
+
+  const CUSTOMER_CONTRACT_ADDRESS = "";
+  const CUSTOMER_ABI = [];
+
+  const FARMER_CONTRACT_ADDRESS = "";
+  const FARMER_ABI = [];
 
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
-  const [contract, setContract] = useState(null);
   const [account, setAccount] = useState("");
+  const [stockContract, setStockContract] = useState(null);
+  const [customerContract, setCustomerContract] = useState(null);
+  const [farmerContract, setFarmerContract] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(defaultProduct);
   const [isSelectedProduct, setIsSelectedProduct] = useState(false);
 
@@ -76,6 +84,29 @@ function App() {
   ];
 
   useEffect(() => {
+    const initContract = (initSigner) => {
+      const stockContract = new ethers.Contract(
+        STOCK_CONTRACT_ADDRESS,
+        STOCK_ABI,
+        initSigner
+      );
+      setStockContract(stockContract);
+
+      const customerContract = new ethers.Contract(
+        CUSTOMER_CONTRACT_ADDRESS,
+        CUSTOMER_ABI,
+        initSigner
+      );
+      setCustomerContract(customerContract);
+
+      const farmerContract = new ethers.Contract(
+        FARMER_CONTRACT_ADDRESS,
+        FARMER_ABI,
+        initSigner
+      );
+      setFarmerContract(farmerContract);
+    };
+
     const init = async () => {
       if (typeof window.ethereum !== "undefined") {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -86,8 +117,7 @@ function App() {
           setAccount(accounts[0]);
           const signer = provider.getSigner();
           setSigner(signer);
-          // const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-          // setContract(contract);
+          initContract(signer);
         });
 
         const accounts = await provider.send("eth_requestAccounts", []);
@@ -95,12 +125,13 @@ function App() {
 
         const signer = provider.getSigner();
         setSigner(signer);
-
-        // const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-        // setContract(contract);
+        initContract(signer);
       }
     };
     init();
+    console.log("stockContract", stockContract);
+    console.log("customerContract", customerContract);
+    console.log("farmerContract", farmerContract);
   }, []);
 
   function handleQuantityChange(quantity) {
