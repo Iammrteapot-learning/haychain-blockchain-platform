@@ -54,7 +54,7 @@ contract HayChainStock is Ownable {
             stock.buyingPrice != 0 && stock.sellingPrice != 0,
             "Product is not exist."
         );
-        require(_quantity < stock.quantity, "Insufficient stock");
+        require(_quantity < stock.quantity + 1, "Insufficient stock");
 
         updateStockPrice(
             _productName,
