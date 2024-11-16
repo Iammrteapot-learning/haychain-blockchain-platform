@@ -684,6 +684,15 @@ function App() {
       type: "function",
     },
   ];
+  const CUSTOMER_STATE_MAPPER = {
+    0: "Idle",
+    1: "Created",
+    2: "Accepted",
+    3: "InTransit",
+    4: "Completed",
+    5: "Rejected",
+    6: "Done",
+  };
 
   const FARMER_CONTRACT_ADDRESS = "0xA07539af15229B4ad4a3Ea23177e87d08c317689";
   const FARMER_ABI = [
@@ -1051,6 +1060,14 @@ function App() {
       type: "function",
     },
   ];
+  const FARMER_STATE_MAPPER = {
+    0: "Idle",
+    1: "Rejected",
+    2: "Created",
+    3: "Received",
+    4: "Completed",
+    5: "Done",
+  };
 
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
