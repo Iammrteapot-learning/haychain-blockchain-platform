@@ -1088,7 +1088,7 @@ function App() {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const orders = await customerContract.getOrdersByCustomerId(account);
+      const orders = await customerContract.getAllOrders();
       console.log("orders are ", orders);
       const orderList = orders.map((order) => {
         return {
@@ -1106,7 +1106,7 @@ function App() {
 
   useEffect(() => {
     const fetchOffers = async () => {
-      const offers = await farmerContract.getOffersByFarmOwner(account);
+      const offers = await farmerContract.getAllOffers();
       const offerList = offers.map((offer) => {
         return {
           offerId: offer.offerId,
