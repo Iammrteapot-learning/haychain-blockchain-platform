@@ -66,7 +66,7 @@ export function Marketplace({
                 <StyledTableCell>{row.product}</StyledTableCell>
                 <StyledTableCell>{row.buying} /kg</StyledTableCell>
                 <StyledTableCell>{row.selling} /kg</StyledTableCell>
-                <StyledTableCell>{row.amount}</StyledTableCell>
+                <StyledTableCell>{row.amount} kg</StyledTableCell>
                 <StyledTableCell align="center">
                   <BuySellButton
                     type={Transaction.Sell}
