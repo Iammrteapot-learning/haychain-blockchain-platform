@@ -38,32 +38,57 @@ const StyledTableCell = styled(TableCell)(() => ({
 export default function OrderList({ orderList, customerContract }) {
   const handleCancelOrder = (state, orderId) => async () => {
     if (state !== "Created") {
-      alert("You can't cancel order if state is not Created!");
+      alert("Transaction state has to be Created first!");
       return;
     }
     try {
       await customerContract.cancelOrder(orderId);
-      alert(`Order has been cancelled! Order ID: ${orderId}`);
+      alert(`Order cancelled successfully! Order ID: ${orderId}`);
     } catch (error) {
       console.error(error);
       alert("Failed to cancel order");
     }
   };
 
-  const handleReceiveOrder = (state, orderId) => async () => {
-    if (state !== "InTransit") {
-      alert("Order state has to be InTransit first!");
+  const handleAcceptOrder = (state, orderId) => async () => {
+    if (state !== "Created") {
+      alert("Transaction state has to be Created first!");
       return;
     }
-
     try {
-      await customerContract.customerReceiveOrder(orderId);
-      alert(
-        `You have confirmed the delivery of this order! Order ID: ${orderId}`
-      );
+      await customerContract.acceptOrder(orderId);
+      alert(`Order accepted successfully! Order ID: ${orderId}`);
     } catch (error) {
       console.error(error);
-      alert("Failed to confirm delivery");
+      alert("Failed to accept order");
+    }
+  };
+
+  const handleDeliver = (state, orderId) => async () => {
+    if (state !== "Accepted") {
+      alert("Transaction state has to be Accepted first!");
+      return;
+    }
+    try {
+      await customerContract.deliver(orderId);
+      alert(`Order delivered successfully! Order ID: ${orderId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to deliver order");
+    }
+  };
+
+  const handleClear = (state, orderId) => async () => {
+    if (state !== "Rejected" && state !== "Completed") {
+      alert("Transaction state has to be Rejected or Completed first!");
+      return;
+    }
+    try {
+      await customerContract.clear(orderId);
+      alert(`Order cleared successfully! Order ID: ${orderId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to clear order");
     }
   };
 
@@ -85,6 +110,8 @@ export default function OrderList({ orderList, customerContract }) {
               <StyledTableCell>QUANTITY</StyledTableCell>
               <StyledTableCell>PRICE</StyledTableCell>
               <StyledTableCell>STATE</StyledTableCell>
+              <StyledTableCell />
+              <StyledTableCell />
               <StyledTableCell />
               <StyledTableCell />
             </TableRow>
@@ -113,19 +140,30 @@ export default function OrderList({ orderList, customerContract }) {
                 <StyledTableCell>{row.orderState}</StyledTableCell>
                 <StyledTableCell align="center">
                   <BaseButton
-                    text="Cancel"
+                    text="Cancel Order"
                     color="red"
                     handleClick={handleCancelOrder(row.orderState, row.orderId)}
                   />
                 </StyledTableCell>
                 <StyledTableCell align="center">
                   <BaseButton
-                    text="Order Received"
+                    text="Accept Order"
                     color="green"
-                    handleClick={handleReceiveOrder(
-                      row.orderState,
-                      row.orderId
-                    )}
+                    handleClick={handleAcceptOrder(row.orderState, row.orderId)}
+                  />
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <BaseButton
+                    text="Deliver"
+                    color="darkblue"
+                    handleClick={handleDeliver(row.orderState, row.orderId)}
+                  />
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <BaseButton
+                    text="Clear"
+                    color="black"
+                    handleClick={handleClear(row.orderState, row.orderId)}
                   />
                 </StyledTableCell>
               </TableRow>
