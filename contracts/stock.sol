@@ -54,7 +54,7 @@ contract HayChainStock is Ownable {
             stock.buyingPrice != 0 && stock.sellingPrice != 0,
             "Product is not exist."
         );
-        require(stock.quantity >= _quantity, "Insufficient stock");
+        require(_quantity < stock.quantity + 1, "Insufficient stock");
 
         updateStockPrice(
             _productName,
@@ -160,24 +160,13 @@ contract HayChainStock is Ownable {
         uint256 oldSellingPrice = stock.sellingPrice;
         uint256 oldBuyingPrice = stock.buyingPrice;
 
-        if (_oldQuantity < _newQuantity) {
-            stock.sellingPrice =
-                oldSellingPrice +
-                1 *
-                (_newQuantity - _oldQuantity);
-            stock.buyingPrice =
-                oldBuyingPrice +
-                1 *
-                (_newQuantity - _oldQuantity);
+        if (_oldQuantity > _newQuantity) {
+            stock.sellingPrice = oldSellingPrice + 1 * (_oldQuantity - _newQuantity);
+            stock.buyingPrice = oldBuyingPrice + 1 * (_oldQuantity - _newQuantity);
         } else {
-            stock.sellingPrice =
-                oldSellingPrice -
-                1 *
-                (_oldQuantity - _newQuantity);
-            stock.buyingPrice =
-                oldBuyingPrice -
-                1 *
-                (_oldQuantity - _newQuantity);
+            uint256 priceAdjustment = 1 * (_newQuantity - _oldQuantity);
+            stock.sellingPrice = stock.sellingPrice > priceAdjustment ? stock.sellingPrice - priceAdjustment : 1;
+            stock.buyingPrice = stock.buyingPrice > priceAdjustment ? stock.buyingPrice - priceAdjustment : 1;
         }
     }
 }
