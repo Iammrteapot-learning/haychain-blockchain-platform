@@ -1072,29 +1072,16 @@ function App() {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [account, setAccount] = useState("");
+
   const [stockContract, setStockContract] = useState(null);
   const [customerContract, setCustomerContract] = useState(null);
   const [farmerContract, setFarmerContract] = useState(null);
+
   const [productList, setProductList] = useState([]);
+  const [offerList, setOfferList] = useState([]);
+
   const [selectedProduct, setSelectedProduct] = useState(defaultProduct);
   const [isSelectedProduct, setIsSelectedProduct] = useState(false);
-
-  const offerList = [
-    {
-      offerId: "0x1",
-      productName: "Hay",
-      quantity: 10,
-      price: 20,
-      state: "Created",
-    },
-    {
-      offerId: "0x2",
-      productName: "Carrot",
-      quantity: 10,
-      price: 30,
-      state: "Received",
-    },
-  ];
 
   const orderList = [
     {
@@ -1119,6 +1106,23 @@ function App() {
       orderState: "Accepted",
     },
   ];
+
+  useEffect(() => {
+    const fetchOffers = async () => {
+      const offers = await farmerContract.getOffersByFarmOwner(account);
+      const offerList = offers.map((offer) => {
+        return {
+          offerId: offer.offerId,
+          productName: offer.productName,
+          quantity: offer.quantity.toNumber(),
+          price: offer.price.toNumber(),
+          state: FARMER_STATE_MAPPER[offer.state],
+        };
+      });
+      setOfferList(offerList);
+    };
+    fetchOffers();
+  }, [farmerContract]);
 
   useEffect(() => {
     const fetchStocks = async () => {
@@ -1199,10 +1203,22 @@ function App() {
     });
   }
 
-  function handleSellBuyButton(updatedProduct) {
+  async function handleSellBuyButton(updatedProduct) {
     console.log(updatedProduct);
     if (updatedProduct.type === Transaction.Sell) {
       //sell
+      try {
+        await farmerContract.payFeeAndMakeOffer(
+          updatedProduct.productName,
+          updatedProduct.quantity,
+          {
+            value: 1,
+          }
+        );
+      } catch (error) {
+        alert("Something went wrong, cannot pay fee");
+        console.log(error);
+      }
     } else if (updatedProduct.type === Transaction.Buy) {
       //buy
     }
