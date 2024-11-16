@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { BaseButton } from "./BaseButton";
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -77,7 +79,21 @@ export default function OrderList({ orderList }) {
           <TableBody>
             {orderList.map((row, index) => (
               <TableRow key={index}>
-                <StyledTableCell>{row.orderId}</StyledTableCell>
+                <StyledTableCell title={row.orderId}>
+                  {row.orderId.substring(0, 15)}...
+                  <CopyToClipboard text={row.orderId}>
+                    <button
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        marginLeft: "8px",
+                      }}
+                    >
+                      <ContentCopyIcon fontSize="small" />
+                    </button>
+                  </CopyToClipboard>
+                </StyledTableCell>
                 <StyledTableCell>{row.productName}</StyledTableCell>
                 <StyledTableCell>{row.quantity}</StyledTableCell>
                 <StyledTableCell>{row.price} /kg</StyledTableCell>
