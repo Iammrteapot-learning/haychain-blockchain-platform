@@ -93,7 +93,7 @@ export default function OrderList({ orderList, customerContract }) {
             {orderList.map((row, index) => (
               <TableRow key={index}>
                 <StyledTableCell title={row.orderId}>
-                  {row.orderId.substring(0, 15)}...
+                  {row.orderId.substring(0, 10)}...
                   <CopyToClipboard text={row.orderId}>
                     <button
                       style={{
