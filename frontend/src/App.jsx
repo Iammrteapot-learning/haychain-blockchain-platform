@@ -1069,6 +1069,8 @@ function App() {
     5: "Done",
   };
 
+  const FEE = 1;
+
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [account, setAccount] = useState("");
@@ -1207,7 +1209,7 @@ function App() {
           updatedProduct.productName,
           updatedProduct.quantity,
           {
-            value: 1,
+            value: FEE,
           }
         );
       } catch (error) {
@@ -1216,6 +1218,18 @@ function App() {
       }
     } else if (updatedProduct.type === Transaction.Buy) {
       //buy
+      try {
+        await customerContract.makeOrder(
+          updatedProduct.quantity,
+          updatedProduct.productName,
+          {
+            value: updatedProduct.price * updatedProduct.quantity + FEE,
+          }
+        );
+      } catch (error) {
+        alert("Something went wrong, cannot make order");
+        console.log(error);
+      }
     }
     clearSelectedProduct();
   }
