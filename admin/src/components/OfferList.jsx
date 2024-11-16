@@ -35,35 +35,46 @@ const StyledTableCell = styled(TableCell)(() => ({
   },
 }));
 
-export default function OrderList({ orderList, customerContract }) {
-  const handleCancelOrder = (state, orderId) => async () => {
+export default function OfferList({ offerList, farmerContract }) {
+  const handleApproveStock = (state, offerId) => async () => {
     if (state !== "Created") {
-      alert("You can't cancel order if state is not Created!");
+      alert("Transaction state has to be Created first!");
       return;
     }
     try {
-      await customerContract.cancelOrder(orderId);
-      alert(`Order has been cancelled! Order ID: ${orderId}`);
+      await farmerContract.approvedStockReceived(offerId);
+      alert(`Stock approved successfully! Offer ID: ${offerId}`);
     } catch (error) {
       console.error(error);
-      alert("Failed to cancel order");
+      alert("Failed to approve stock");
     }
   };
 
-  const handleReceiveOrder = (state, orderId) => async () => {
-    if (state !== "InTransit") {
-      alert("Order state has to be InTransit first!");
+  const handleRejectStock = (state, offerId) => async () => {
+    if (state !== "Created") {
+      alert("Transaction state has to be Created first!");
       return;
     }
-
     try {
-      await customerContract.customerReceiveOrder(orderId);
-      alert(
-        `You have confirmed the delivery of this order! Order ID: ${orderId}`
-      );
+      await farmerContract.rejectStock(offerId);
+      alert(`Stock rejected successfully! Offer ID: ${offerId}`);
     } catch (error) {
       console.error(error);
-      alert("Failed to confirm delivery");
+      alert("Failed to reject stock");
+    }
+  };
+
+  const handleClearStock = (state, offerId) => async () => {
+    if (state !== "Completed" && state !== "Rejected") {
+      alert("Transaction state has to be Completed or Rejected first!");
+      return;
+    }
+    try {
+      await farmerContract.clear(offerId);
+      alert(`Stock cleared successfully! Offer ID: ${offerId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to clear stock");
     }
   };
 
@@ -80,21 +91,23 @@ export default function OrderList({ orderList, customerContract }) {
         <Table stickyheader="true">
           <TableHead stickyheader="true">
             <TableRow>
-              <StyledTableCell>ORDER ID</StyledTableCell>
+              <StyledTableCell>OFFER ID</StyledTableCell>
               <StyledTableCell>PRODUCT NAME</StyledTableCell>
               <StyledTableCell>QUANTITY</StyledTableCell>
               <StyledTableCell>PRICE</StyledTableCell>
               <StyledTableCell>STATE</StyledTableCell>
+              {/* <StyledTableCell /> */}
+              <StyledTableCell />
               <StyledTableCell />
               <StyledTableCell />
             </TableRow>
           </TableHead>
           <TableBody>
-            {orderList.map((row, index) => (
+            {offerList.map((row, index) => (
               <TableRow key={index}>
-                <StyledTableCell title={row.orderId}>
-                  {row.orderId.substring(0, 10)}...
-                  <CopyToClipboard text={row.orderId}>
+                <StyledTableCell title={row.offerId}>
+                  {row.offerId.substring(0, 15)}...
+                  <CopyToClipboard text={row.offerId}>
                     <button
                       style={{
                         background: "none",
@@ -110,22 +123,27 @@ export default function OrderList({ orderList, customerContract }) {
                 <StyledTableCell>{row.productName}</StyledTableCell>
                 <StyledTableCell>{row.quantity}</StyledTableCell>
                 <StyledTableCell>{row.price} /kg</StyledTableCell>
-                <StyledTableCell>{row.orderState}</StyledTableCell>
+                <StyledTableCell>{row.state}</StyledTableCell>
+                {/* <StyledTableCell align="center" width={192}></StyledTableCell> */}
                 <StyledTableCell align="center">
                   <BaseButton
-                    text="Cancel"
-                    color="red"
-                    handleClick={handleCancelOrder(row.orderState, row.orderId)}
+                    text="Approve Stock"
+                    color="green"
+                    handleClick={handleApproveStock(row.state, row.offerId)}
                   />
                 </StyledTableCell>
                 <StyledTableCell align="center">
                   <BaseButton
-                    text="Order Received"
-                    color="green"
-                    handleClick={handleReceiveOrder(
-                      row.orderState,
-                      row.orderId
-                    )}
+                    text="Reject Stock"
+                    color="red"
+                    handleClick={handleRejectStock(row.state, row.offerId)}
+                  />
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <BaseButton
+                    text="Clear"
+                    color="orange"
+                    handleClick={handleClearStock(row.state, row.offerId)}
                   />
                 </StyledTableCell>
               </TableRow>

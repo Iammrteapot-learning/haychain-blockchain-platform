@@ -76,7 +76,7 @@ export default function OfferList({ offerList, farmerContract }) {
             {offerList.map((row, index) => (
               <TableRow key={index}>
                 <StyledTableCell title={row.offerId}>
-                  {row.offerId.substring(0, 15)}...
+                  {row.offerId.substring(0, 10)}...
                   <CopyToClipboard text={row.offerId}>
                     <button
                       style={{
