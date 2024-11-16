@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { BaseButton } from "./BaseButton";
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -33,23 +35,36 @@ const StyledTableCell = styled(TableCell)(() => ({
   },
 }));
 
-export default function OrderList({ orderList }) {
-  const handleCancelOrder = (state, orderId) => () => {
+export default function OrderList({ orderList, customerContract }) {
+  const handleCancelOrder = (state, orderId) => async () => {
     if (state !== "Created") {
       alert("You can't cancel order if state is not Created!");
       return;
     }
-    alert(`Order is cancelling! Order ID: ${orderId}`);
+    try {
+      await customerContract.cancelOrder(orderId);
+      alert(`Order has been cancelled! Order ID: ${orderId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to cancel order");
+    }
   };
 
-  const handleReceiveOrder = (state, orderId) => () => {
+  const handleReceiveOrder = (state, orderId) => async () => {
     if (state !== "InTransit") {
       alert("Order state has to be InTransit first!");
       return;
     }
-    alert(
-      `You have confirmed the delivery of this order! Order ID: ${orderId}`
-    );
+
+    try {
+      await customerContract.customerReceiveOrder(orderId);
+      alert(
+        `You have confirmed the delivery of this order! Order ID: ${orderId}`
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Failed to confirm delivery");
+    }
   };
 
   return (
@@ -77,7 +92,21 @@ export default function OrderList({ orderList }) {
           <TableBody>
             {orderList.map((row, index) => (
               <TableRow key={index}>
-                <StyledTableCell>{row.orderId}</StyledTableCell>
+                <StyledTableCell title={row.orderId}>
+                  {row.orderId.substring(0, 15)}...
+                  <CopyToClipboard text={row.orderId}>
+                    <button
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        marginLeft: "8px",
+                      }}
+                    >
+                      <ContentCopyIcon fontSize="small" />
+                    </button>
+                  </CopyToClipboard>
+                </StyledTableCell>
                 <StyledTableCell>{row.productName}</StyledTableCell>
                 <StyledTableCell>{row.quantity}</StyledTableCell>
                 <StyledTableCell>{row.price} /kg</StyledTableCell>

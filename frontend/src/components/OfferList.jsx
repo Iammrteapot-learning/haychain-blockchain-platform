@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { tableCellClasses } from "@mui/material/TableCell";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { BaseButton } from "./BaseButton";
 
 const StyledTableCell = styled(TableCell)(() => ({
@@ -33,13 +35,19 @@ const StyledTableCell = styled(TableCell)(() => ({
   },
 }));
 
-export default function OfferList({ offerList }) {
-  const handleReceiveMoney = (state, offerId) => () => {
+export default function OfferList({ offerList, farmerContract }) {
+  const handleReceiveMoney = (state, offerId) => async () => {
     if (state !== "Received") {
       alert("Transaction state has to be Received first!");
       return;
     }
-    alert(`Money received successfully! Offer ID: ${offerId}`);
+    try {
+      await farmerContract.receiveMoney(offerId);
+      alert(`Money received successfully! Offer ID: ${offerId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to receive money");
+    }
   };
 
   return (
@@ -67,7 +75,21 @@ export default function OfferList({ offerList }) {
           <TableBody>
             {offerList.map((row, index) => (
               <TableRow key={index}>
-                <StyledTableCell>{row.offerId}</StyledTableCell>
+                <StyledTableCell title={row.offerId}>
+                  {row.offerId.substring(0, 15)}...
+                  <CopyToClipboard text={row.offerId}>
+                    <button
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        marginLeft: "8px",
+                      }}
+                    >
+                      <ContentCopyIcon fontSize="small" />
+                    </button>
+                  </CopyToClipboard>
+                </StyledTableCell>
                 <StyledTableCell>{row.productName}</StyledTableCell>
                 <StyledTableCell>{row.quantity}</StyledTableCell>
                 <StyledTableCell>{row.price} /kg</StyledTableCell>

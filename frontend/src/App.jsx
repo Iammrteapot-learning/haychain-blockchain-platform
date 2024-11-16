@@ -19,7 +19,7 @@ const defaultProduct = {
 };
 
 function App() {
-  const STOCK_CONTRACT_ADDRESS = "0x3EB33A09E65A2a304B8e83fFEa7C754300201eF4";
+  const STOCK_CONTRACT_ADDRESS = "0xEd28a934D16A6084f806DFb7eB92AAb0705A564d";
   const STOCK_ABI = [
     {
       inputs: [
@@ -325,7 +325,7 @@ function App() {
   ];
 
   const CUSTOMER_CONTRACT_ADDRESS =
-    "0x734E1e460028cFFe241E068AE67B593D0a53D513";
+    "0xd8161ca9A117c1912f6548f7F4966DB28C877660";
   const CUSTOMER_ABI = [
     {
       inputs: [
@@ -376,7 +376,20 @@ function App() {
       ],
       name: "clear",
       outputs: [],
-      stateMutability: "payable",
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "orderId",
+          type: "bytes32",
+        },
+      ],
+      name: "customerReceiveOrder",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
     },
     {
@@ -451,19 +464,6 @@ function App() {
     {
       inputs: [
         {
-          internalType: "bytes32",
-          name: "orderId",
-          type: "bytes32",
-        },
-      ],
-      name: "received",
-      outputs: [],
-      stateMutability: "payable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
           internalType: "address",
           name: "_admin",
           type: "address",
@@ -497,14 +497,6 @@ function App() {
       ],
       stateMutability: "nonpayable",
       type: "constructor",
-    },
-    {
-      stateMutability: "payable",
-      type: "fallback",
-    },
-    {
-      stateMutability: "payable",
-      type: "receive",
     },
     {
       inputs: [],
@@ -692,8 +684,17 @@ function App() {
       type: "function",
     },
   ];
+  const CUSTOMER_STATE_MAPPER = {
+    0: "Idle",
+    1: "Created",
+    2: "Accepted",
+    3: "InTransit",
+    4: "Completed",
+    5: "Rejected",
+    6: "Done",
+  };
 
-  const FARMER_CONTRACT_ADDRESS = "0xff9Cc794F5cca7eA2A65983dd5705755f17ADA11";
+  const FARMER_CONTRACT_ADDRESS = "0xA07539af15229B4ad4a3Ea23177e87d08c317689";
   const FARMER_ABI = [
     {
       inputs: [
@@ -709,16 +710,10 @@ function App() {
       type: "function",
     },
     {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "amount",
-          type: "uint256",
-        },
-      ],
+      inputs: [],
       name: "addBudget",
       outputs: [],
-      stateMutability: "nonpayable",
+      stateMutability: "payable",
       type: "function",
     },
     {
@@ -731,7 +726,7 @@ function App() {
       ],
       name: "approvedStockReceived",
       outputs: [],
-      stateMutability: "payable",
+      stateMutability: "nonpayable",
       type: "function",
     },
     {
@@ -865,14 +860,6 @@ function App() {
       ],
       stateMutability: "nonpayable",
       type: "constructor",
-    },
-    {
-      stateMutability: "payable",
-      type: "fallback",
-    },
-    {
-      stateMutability: "payable",
-      type: "receive",
     },
     {
       inputs: [],
@@ -1073,61 +1060,83 @@ function App() {
       type: "function",
     },
   ];
+  const FARMER_STATE_MAPPER = {
+    0: "Idle",
+    1: "Rejected",
+    2: "Created",
+    3: "Received",
+    4: "Completed",
+    5: "Done",
+  };
+
+  const FEE = 1;
 
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [account, setAccount] = useState("");
+
   const [stockContract, setStockContract] = useState(null);
   const [customerContract, setCustomerContract] = useState(null);
   const [farmerContract, setFarmerContract] = useState(null);
+
+  const [productList, setProductList] = useState([]);
+  const [offerList, setOfferList] = useState([]);
+  const [orderList, setOrderList] = useState([]);
+
   const [selectedProduct, setSelectedProduct] = useState(defaultProduct);
   const [isSelectedProduct, setIsSelectedProduct] = useState(false);
 
-  const productList = [
-    { product: "Hay", buying: 20, selling: 18, amount: 100 },
-    { product: "Carrot", buying: 24, selling: 20, amount: 50 },
-  ];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const orders = await customerContract.getOrdersByCustomerId(account);
+      console.log("orders are ", orders);
+      const orderList = orders.map((order) => {
+        return {
+          orderId: order.orderId,
+          productName: order.productName,
+          quantity: order.quantity.toNumber(),
+          price: order.price.toNumber(),
+          orderState: CUSTOMER_STATE_MAPPER[order.orderState],
+        };
+      });
+      setOrderList(orderList);
+    };
+    fetchOrders();
+  }, [customerContract]);
 
-  const offerList = [
-    {
-      offerId: "0x1",
-      productName: "Hay",
-      quantity: 10,
-      price: 20,
-      state: "Created",
-    },
-    {
-      offerId: "0x2",
-      productName: "Carrot",
-      quantity: 10,
-      price: 30,
-      state: "Received",
-    },
-  ];
+  useEffect(() => {
+    const fetchOffers = async () => {
+      const offers = await farmerContract.getOffersByFarmOwner(account);
+      const offerList = offers.map((offer) => {
+        return {
+          offerId: offer.offerId,
+          productName: offer.productName,
+          quantity: offer.quantity.toNumber(),
+          price: offer.price.toNumber(),
+          state: FARMER_STATE_MAPPER[offer.state],
+        };
+      });
+      setOfferList(offerList);
+    };
+    fetchOffers();
+  }, [farmerContract]);
 
-  const orderList = [
-    {
-      orderId: "0x1",
-      productName: "Hay",
-      quantity: 10,
-      price: 20,
-      orderState: "Created",
-    },
-    {
-      orderId: "0x2",
-      productName: "Carrot",
-      quantity: 10,
-      price: 30,
-      orderState: "InTransit",
-    },
-    {
-      orderId: "0x3",
-      productName: "Hay",
-      quantity: 10,
-      price: 20,
-      orderState: "Accepted",
-    },
-  ];
+  useEffect(() => {
+    const fetchStocks = async () => {
+      const stocks = await stockContract.getAllStocks();
+      console.log(stocks);
+      const productList = stocks.map((stock) => {
+        return {
+          product: stock.productName,
+          selling: stock.sellingPrice.toNumber(),
+          buying: stock.buyingPrice.toNumber(),
+          amount: stock.quantity.toNumber(),
+        };
+      });
+      setProductList(productList);
+    };
+    fetchStocks();
+  }, [stockContract]);
 
   useEffect(() => {
     const initContract = (initSigner) => {
@@ -1191,12 +1200,36 @@ function App() {
     });
   }
 
-  function handleSellBuyButton(updatedProduct) {
+  async function handleSellBuyButton(updatedProduct) {
     console.log(updatedProduct);
     if (updatedProduct.type === Transaction.Sell) {
       //sell
+      try {
+        await farmerContract.payFeeAndMakeOffer(
+          updatedProduct.productName,
+          updatedProduct.quantity,
+          {
+            value: FEE,
+          }
+        );
+      } catch (error) {
+        alert("Something went wrong, cannot pay fee");
+        console.log(error);
+      }
     } else if (updatedProduct.type === Transaction.Buy) {
       //buy
+      try {
+        await customerContract.makeOrder(
+          updatedProduct.quantity,
+          updatedProduct.productName,
+          {
+            value: updatedProduct.price * updatedProduct.quantity + FEE,
+          }
+        );
+      } catch (error) {
+        alert("Something went wrong, cannot make order");
+        console.log(error);
+      }
     }
     clearSelectedProduct();
   }
@@ -1229,8 +1262,11 @@ function App() {
             setSelectedProduct={setSelectedProduct}
             setIsSelectedProduct={setIsSelectedProduct}
           />
-          <OfferList offerList={offerList} />
-          <OrderList orderList={orderList} />
+          <OfferList offerList={offerList} farmerContract={farmerContract} />
+          <OrderList
+            orderList={orderList}
+            customerContract={customerContract}
+          />
         </div>
       </div>
       {isSelectedProduct && (
