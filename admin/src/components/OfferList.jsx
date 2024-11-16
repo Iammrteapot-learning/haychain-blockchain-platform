@@ -36,17 +36,45 @@ const StyledTableCell = styled(TableCell)(() => ({
 }));
 
 export default function OfferList({ offerList, farmerContract }) {
-  const handleReceiveMoney = (state, offerId) => async () => {
-    if (state !== "Received") {
-      alert("Transaction state has to be Received first!");
+  const handleApproveStock = (state, offerId) => async () => {
+    if (state !== "Created") {
+      alert("Transaction state has to be Created first!");
       return;
     }
     try {
-      await farmerContract.receiveMoney(offerId);
-      alert(`Money received successfully! Offer ID: ${offerId}`);
+      await farmerContract.approvedStockReceived(offerId);
+      alert(`Stock approved successfully! Offer ID: ${offerId}`);
     } catch (error) {
       console.error(error);
-      alert("Failed to receive money");
+      alert("Failed to approve stock");
+    }
+  };
+
+  const handleRejectStock = (state, offerId) => async () => {
+    if (state !== "Created") {
+      alert("Transaction state has to be Created first!");
+      return;
+    }
+    try {
+      await farmerContract.rejectStock(offerId);
+      alert(`Stock rejected successfully! Offer ID: ${offerId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to reject stock");
+    }
+  };
+
+  const handleClearStock = (state, offerId) => async () => {
+    if (state !== "Completed" && state !== "Rejected") {
+      alert("Transaction state has to be Completed or Rejected first!");
+      return;
+    }
+    try {
+      await farmerContract.clear(offerId);
+      alert(`Stock cleared successfully! Offer ID: ${offerId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to clear stock");
     }
   };
 
@@ -69,6 +97,8 @@ export default function OfferList({ offerList, farmerContract }) {
               <StyledTableCell>PRICE</StyledTableCell>
               <StyledTableCell>STATE</StyledTableCell>
               {/* <StyledTableCell /> */}
+              <StyledTableCell />
+              <StyledTableCell />
               <StyledTableCell />
             </TableRow>
           </TableHead>
@@ -95,11 +125,25 @@ export default function OfferList({ offerList, farmerContract }) {
                 <StyledTableCell>{row.price} /kg</StyledTableCell>
                 <StyledTableCell>{row.state}</StyledTableCell>
                 {/* <StyledTableCell align="center" width={192}></StyledTableCell> */}
-                <StyledTableCell align="center" width={360}>
+                <StyledTableCell align="center">
                   <BaseButton
-                    text="Receive Money"
+                    text="Approve Stock"
                     color="green"
-                    handleClick={handleReceiveMoney(row.state, row.offerId)}
+                    handleClick={handleApproveStock(row.state, row.offerId)}
+                  />
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <BaseButton
+                    text="Reject Stock"
+                    color="red"
+                    handleClick={handleRejectStock(row.state, row.offerId)}
+                  />
+                </StyledTableCell>
+                <StyledTableCell align="center">
+                  <BaseButton
+                    text="Clear"
+                    color="orange"
+                    handleClick={handleClearStock(row.state, row.offerId)}
                   />
                 </StyledTableCell>
               </TableRow>
