@@ -19,7 +19,7 @@ const defaultProduct = {
 };
 
 function App() {
-  const STOCK_CONTRACT_ADDRESS = "0x3EB33A09E65A2a304B8e83fFEa7C754300201eF4";
+  const STOCK_CONTRACT_ADDRESS = "0xEd28a934D16A6084f806DFb7eB92AAb0705A564d";
   const STOCK_ABI = [
     {
       inputs: [
@@ -325,7 +325,7 @@ function App() {
   ];
 
   const CUSTOMER_CONTRACT_ADDRESS =
-    "0x734E1e460028cFFe241E068AE67B593D0a53D513";
+    "0xd8161ca9A117c1912f6548f7F4966DB28C877660";
   const CUSTOMER_ABI = [
     {
       inputs: [
@@ -376,7 +376,20 @@ function App() {
       ],
       name: "clear",
       outputs: [],
-      stateMutability: "payable",
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "bytes32",
+          name: "orderId",
+          type: "bytes32",
+        },
+      ],
+      name: "customerReceiveOrder",
+      outputs: [],
+      stateMutability: "nonpayable",
       type: "function",
     },
     {
@@ -451,19 +464,6 @@ function App() {
     {
       inputs: [
         {
-          internalType: "bytes32",
-          name: "orderId",
-          type: "bytes32",
-        },
-      ],
-      name: "received",
-      outputs: [],
-      stateMutability: "payable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
           internalType: "address",
           name: "_admin",
           type: "address",
@@ -497,14 +497,6 @@ function App() {
       ],
       stateMutability: "nonpayable",
       type: "constructor",
-    },
-    {
-      stateMutability: "payable",
-      type: "fallback",
-    },
-    {
-      stateMutability: "payable",
-      type: "receive",
     },
     {
       inputs: [],
@@ -693,7 +685,7 @@ function App() {
     },
   ];
 
-  const FARMER_CONTRACT_ADDRESS = "0xff9Cc794F5cca7eA2A65983dd5705755f17ADA11";
+  const FARMER_CONTRACT_ADDRESS = "0xA07539af15229B4ad4a3Ea23177e87d08c317689";
   const FARMER_ABI = [
     {
       inputs: [
@@ -709,16 +701,10 @@ function App() {
       type: "function",
     },
     {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "amount",
-          type: "uint256",
-        },
-      ],
+      inputs: [],
       name: "addBudget",
       outputs: [],
-      stateMutability: "nonpayable",
+      stateMutability: "payable",
       type: "function",
     },
     {
@@ -731,7 +717,7 @@ function App() {
       ],
       name: "approvedStockReceived",
       outputs: [],
-      stateMutability: "payable",
+      stateMutability: "nonpayable",
       type: "function",
     },
     {
@@ -865,14 +851,6 @@ function App() {
       ],
       stateMutability: "nonpayable",
       type: "constructor",
-    },
-    {
-      stateMutability: "payable",
-      type: "fallback",
-    },
-    {
-      stateMutability: "payable",
-      type: "receive",
     },
     {
       inputs: [],
