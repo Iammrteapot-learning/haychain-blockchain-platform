@@ -1257,11 +1257,13 @@ function App() {
           <p className="font-laomn text-xl text-darkblue my-2">
             Agricultural Products Marketplace
           </p>
-          <Marketplace
-            productList={productList}
-            setSelectedProduct={setSelectedProduct}
-            setIsSelectedProduct={setIsSelectedProduct}
-          />
+          {false && (
+            <Marketplace
+              productList={productList}
+              setSelectedProduct={setSelectedProduct}
+              setIsSelectedProduct={setIsSelectedProduct}
+            />
+          )}
           <OfferList offerList={offerList} farmerContract={farmerContract} />
           <OrderList
             orderList={orderList}
