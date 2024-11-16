@@ -1075,13 +1075,9 @@ function App() {
   const [stockContract, setStockContract] = useState(null);
   const [customerContract, setCustomerContract] = useState(null);
   const [farmerContract, setFarmerContract] = useState(null);
+  const [productList, setProductList] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(defaultProduct);
   const [isSelectedProduct, setIsSelectedProduct] = useState(false);
-
-  const productList = [
-    { product: "Hay", buying: 20, selling: 18, amount: 100 },
-    { product: "Carrot", buying: 24, selling: 20, amount: 50 },
-  ];
 
   const offerList = [
     {
@@ -1123,6 +1119,23 @@ function App() {
       orderState: "Accepted",
     },
   ];
+
+  useEffect(() => {
+    const fetchStocks = async () => {
+      const stocks = await stockContract.getAllStocks();
+      console.log(stocks);
+      const productList = stocks.map((stock) => {
+        return {
+          product: stock.productName,
+          selling: stock.sellingPrice.toNumber(),
+          buying: stock.buyingPrice.toNumber(),
+          amount: stock.quantity.toNumber(),
+        };
+      });
+      setProductList(productList);
+    };
+    fetchStocks();
+  }, [stockContract]);
 
   useEffect(() => {
     const initContract = (initSigner) => {
