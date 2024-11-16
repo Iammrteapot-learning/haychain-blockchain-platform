@@ -1079,33 +1079,28 @@ function App() {
 
   const [productList, setProductList] = useState([]);
   const [offerList, setOfferList] = useState([]);
+  const [orderList, setOrderList] = useState([]);
 
   const [selectedProduct, setSelectedProduct] = useState(defaultProduct);
   const [isSelectedProduct, setIsSelectedProduct] = useState(false);
 
-  const orderList = [
-    {
-      orderId: "0x1",
-      productName: "Hay",
-      quantity: 10,
-      price: 20,
-      orderState: "Created",
-    },
-    {
-      orderId: "0x2",
-      productName: "Carrot",
-      quantity: 10,
-      price: 30,
-      orderState: "InTransit",
-    },
-    {
-      orderId: "0x3",
-      productName: "Hay",
-      quantity: 10,
-      price: 20,
-      orderState: "Accepted",
-    },
-  ];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const orders = await customerContract.getOrdersByCustomerId(account);
+      console.log("orders are ", orders);
+      const orderList = orders.map((order) => {
+        return {
+          orderId: order.orderId,
+          productName: order.productName,
+          quantity: order.quantity.toNumber(),
+          price: order.price.toNumber(),
+          orderState: CUSTOMER_STATE_MAPPER[order.orderState],
+        };
+      });
+      setOrderList(orderList);
+    };
+    fetchOrders();
+  }, [customerContract]);
 
   useEffect(() => {
     const fetchOffers = async () => {
