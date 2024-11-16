@@ -1262,8 +1262,11 @@ function App() {
             setSelectedProduct={setSelectedProduct}
             setIsSelectedProduct={setIsSelectedProduct}
           />
-          <OfferList offerList={offerList} />
-          <OrderList orderList={orderList} />
+          <OfferList offerList={offerList} farmerContract={farmerContract} />
+          <OrderList
+            orderList={orderList}
+            customerContract={customerContract}
+          />
         </div>
       </div>
       {isSelectedProduct && (

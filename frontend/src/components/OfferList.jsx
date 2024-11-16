@@ -35,13 +35,19 @@ const StyledTableCell = styled(TableCell)(() => ({
   },
 }));
 
-export default function OfferList({ offerList }) {
-  const handleReceiveMoney = (state, offerId) => () => {
+export default function OfferList({ offerList, farmerContract }) {
+  const handleReceiveMoney = (state, offerId) => async () => {
     if (state !== "Received") {
       alert("Transaction state has to be Received first!");
       return;
     }
-    alert(`Money received successfully! Offer ID: ${offerId}`);
+    try {
+      await farmerContract.receiveMoney(offerId);
+      alert(`Money received successfully! Offer ID: ${offerId}`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to receive money");
+    }
   };
 
   return (
