@@ -6,6 +6,17 @@ HayChain is a blockchain-based web application designed for agriculture product 
 
 The HayChain application is already deployed on an EC2 instance and can be accessed [here](http://ec2-54-254-88-202.ap-southeast-1.compute.amazonaws.com/).
 
+If you wish to deploy it by yourself,
+run this command to generate html , css, and javascript files
+```bash
+# Install project dependencies first
+npm install
+
+# Generate html,css,js files by using React framework
+npm run build
+```
+The default folder of the generated files are at the folder `dist`, you can then set up any web server service such as nginx to serve those files.
+
 All smart contracts for the application are deployed on the Sepolia testnet. To interact with the application, you can obtain free SepoliaETH from any [Ethereum Sepolia Faucet](https://cloud.google.com/application/web3/faucet/ethereum/sepolia) to fund your transactions.
 
 ## Smart Contracts
